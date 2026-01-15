@@ -1,0 +1,50 @@
+name: VibeKanban
+options:
+  bundleIdPrefix: com.vibekanban
+  deploymentTarget:
+    macOS: "26.0"
+  xcodeVersion: "26.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.2"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: false
+
+packages:
+  SwiftTerm:
+    url: https://github.com/cocoabagel/SwiftTerm.git
+    branch: main
+
+targets:
+  VibeKanban:
+    type: application
+    platform: macOS
+    sources:
+      - path: VibeKanban
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cocoabagel.vibekanban.app
+        PRODUCT_NAME: VibeKanban
+        INFOPLIST_GENERATION_MODE: GeneratedFile
+        GENERATE_INFOPLIST_FILE: true
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 1.0.0
+        CODE_SIGN_STYLE: Automatic
+        COMBINE_HIDPI_IMAGES: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_EMIT_LOC_STRINGS: true
+        ENABLE_PREVIEWS: true
+    info:
+      path: VibeKanban/Info.plist
+      properties:
+        LSUIElement: false
+        LSApplicationCategoryType: public.app-category.developer-tools
+    dependencies:
+      - package: SwiftTerm
+    entitlements:
+      path: VibeKanban/VibeKanban.entitlements
+      properties:
+        com.apple.security.app-sandbox: false

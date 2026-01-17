@@ -313,8 +313,6 @@ struct WorkingDirectorySelector: View {
 
         if panel.runModal() == .OK, let url = panel.url {
             path = url.path
-            // Setup Claude Code hooks for VibeKanban integration
-            ClaudeHooksManager.setupHooksForProject(at: url.path)
         }
     }
 }

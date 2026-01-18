@@ -36,6 +36,8 @@ struct GitDiffView: View {
     @StateObject private var gitService: GitService
     @State private var selectedFile: GitFileChange?
     @State private var selectedIndex: Int = 0
+    @State private var commitMessage: String = ""
+    @State private var showingResultAlert = false
 
     init(workingDirectory: String) {
         _gitService = StateObject(wrappedValue: GitService(workingDirectory: workingDirectory))
@@ -58,6 +60,34 @@ struct GitDiffView: View {
                 EmptyDiffView()
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    gitService.refresh()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("更新")
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                HStack(spacing: 8) {
+                    TextField("コミットメッセージ", text: $commitMessage)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 200)
+
+                    Button("Commit") {
+                        performCommit()
+                    }
+                    .disabled(commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || gitService.isCommitting)
+
+                    Button("Push") {
+                        performPush()
+                    }
+                    .disabled(gitService.isPushing)
+                }
+            }
+        }
         .task {
             gitService.refresh()
         }
@@ -73,15 +103,67 @@ struct GitDiffView: View {
                 selectedIndex = 0
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    gitService.refresh()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("更新")
+        .onChange(of: gitService.lastOperationResult) { _, result in
+            if result != nil {
+                showingResultAlert = true
             }
+        }
+        .alert(
+            alertTitle,
+            isPresented: $showingResultAlert,
+            presenting: gitService.lastOperationResult
+        ) { _ in
+            Button("OK") {
+                gitService.lastOperationResult = nil
+            }
+        } message: { result in
+            switch result {
+            case let .success(message):
+                Text(message)
+
+            case let .failure(message):
+                Text(message)
+            }
+        }
+    }
+
+    private var alertTitle: String {
+        switch gitService.lastOperationResult {
+        case .success:
+            "成功"
+
+        case .failure:
+            "エラー"
+
+        case nil:
+            ""
+        }
+    }
+
+    private var canCommit: Bool {
+        !commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !gitService.isCommitting
+    }
+
+    private var canPush: Bool {
+        !gitService.isPushing && gitService.hasRemote()
+    }
+
+    private func performCommit() {
+        Task {
+            let success = await gitService.commit(message: commitMessage)
+            if success {
+                commitMessage = ""
+                selectedFile = nil
+                selectedIndex = 0
+                gitService.selectedFileDiff = nil
+            }
+        }
+    }
+
+    private func performPush() {
+        Task {
+            _ = await gitService.push()
         }
     }
 }

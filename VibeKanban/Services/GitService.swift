@@ -84,6 +84,14 @@ struct GitFileDiff: Identifiable {
 class GitService: ObservableObject {
     @Published var changedFiles: [GitFileChange] = []
     @Published var selectedFileDiff: GitFileDiff?
+    @Published var isCommitting = false
+    @Published var isPushing = false
+    @Published var lastOperationResult: OperationResult?
+
+    enum OperationResult: Equatable {
+        case success(String)
+        case failure(String)
+    }
 
     private let workingDirectory: String
 
@@ -93,6 +101,78 @@ class GitService: ObservableObject {
 
     func refresh() {
         changedFiles = fetchChangedFiles()
+    }
+
+    // MARK: - Git Operations
+
+    func stageAll() -> Bool {
+        let result = runGitCommand(["add", "-A"])
+        return result.isEmpty || !result.contains("fatal:")
+    }
+
+    func commit(message: String) async -> Bool {
+        guard !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            lastOperationResult = .failure("コミットメッセージを入力してください")
+            return false
+        }
+
+        isCommitting = true
+        defer { isCommitting = false }
+
+        // Stage all changes first
+        guard stageAll() else {
+            lastOperationResult = .failure("ステージングに失敗しました")
+            return false
+        }
+
+        let result = runGitCommand(["commit", "-m", message])
+
+        if result.contains("nothing to commit") {
+            lastOperationResult = .failure("コミットする変更がありません")
+            return false
+        } else if result.contains("fatal:") || result.contains("error:") {
+            lastOperationResult = .failure("コミットに失敗しました: \(result)")
+            return false
+        }
+
+        lastOperationResult = .success("コミットしました")
+        refresh()
+        return true
+    }
+
+    func push() async -> Bool {
+        isPushing = true
+        defer { isPushing = false }
+
+        // Check if upstream is set
+        let upstreamCheck = runGitCommand(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
+        let hasUpstream = !upstreamCheck.contains("fatal:") && !upstreamCheck.isEmpty
+
+        let result: String
+        if hasUpstream {
+            result = runGitCommand(["push"])
+        } else {
+            // Set upstream automatically
+            result = runGitCommand(["push", "-u", "origin", "HEAD"])
+        }
+
+        if result.contains("fatal:") || result.contains("error:") || result.contains("rejected") {
+            lastOperationResult = .failure("プッシュに失敗しました: \(result)")
+            return false
+        }
+
+        lastOperationResult = .success("プッシュしました")
+        return true
+    }
+
+    func getCurrentBranch() -> String {
+        let result = runGitCommand(["branch", "--show-current"])
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func hasRemote() -> Bool {
+        let result = runGitCommand(["remote"])
+        return !result.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func fetchChangedFiles() -> [GitFileChange] {

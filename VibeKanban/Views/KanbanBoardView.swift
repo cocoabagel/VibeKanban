@@ -30,6 +30,7 @@ struct KanbanBoardView: View {
     @Binding var baseWorkingDirectory: String
     @Binding var skipPermissions: Bool
     @Binding var selectedFilter: TaskStatus?
+    @Binding var searchText: String
     let terminalManager: TerminalSessionManager
     let onCreateItem: () -> Void
     let onDeleteItem: (KanbanItem) -> Void
@@ -44,11 +45,18 @@ struct KanbanBoardView: View {
     }
 
     private var filteredItems: [KanbanItem] {
-        let repoItems = repositoryFilteredItems
+        var result = repositoryFilteredItems
         if let filter = selectedFilter {
-            return repoItems.filter { $0.status == filter }
+            result = result.filter { $0.status == filter }
         }
-        return repoItems
+        if !searchText.isEmpty {
+            let query = searchText.lowercased()
+            result = result.filter { item in
+                item.title.lowercased().contains(query) ||
+                    item.itemDescription.lowercased().contains(query)
+            }
+        }
+        return result
     }
 
     private var waitingCount: Int {
@@ -65,6 +73,7 @@ struct KanbanBoardView: View {
             SessionSidebar(
                 items: repositoryFilteredItems,
                 selectedFilter: $selectedFilter,
+                searchText: $searchText,
                 baseWorkingDirectory: $baseWorkingDirectory,
                 skipPermissions: $skipPermissions,
                 onCreateItem: onCreateItem,
@@ -94,6 +103,7 @@ struct KanbanBoardView: View {
 struct SessionSidebar: View {
     let items: [KanbanItem]
     @Binding var selectedFilter: TaskStatus?
+    @Binding var searchText: String
     @Binding var baseWorkingDirectory: String
     @Binding var skipPermissions: Bool
     let onCreateItem: () -> Void
@@ -129,6 +139,7 @@ struct SessionSidebar: View {
         VStack(alignment: .leading, spacing: 24) {
             titleSection
             WorkingDirectorySelector(path: $baseWorkingDirectory)
+            searchField
             statsSection
             settingsSection
             Spacer()
@@ -171,6 +182,30 @@ struct SessionSidebar: View {
         Text("VibeKanban")
             .font(.system(size: 18, weight: .semibold, design: .monospaced))
             .foregroundColor(.white)
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(SessionMonitorColors.gray)
+            TextField("Search tasks...", text: $searchText)
+                .textFieldStyle(.plain)
+                .font(.system(size: 12))
+                .foregroundColor(.white)
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(SessionMonitorColors.gray)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(SessionMonitorColors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var statsSection: some View {

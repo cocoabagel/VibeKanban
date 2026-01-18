@@ -11,14 +11,14 @@ enum GitDiffColors {
     static let comment = Color(hex: 0x969896)
 
     // Diff specific colors
-    static let additionBackground = Color(hex: 0x2A3D2A)  // Darker green background
-    static let additionText = Color(hex: 0xB5BD68)        // Tomorrow Night green
-    static let deletionBackground = Color(hex: 0x3D2A2A)  // Darker red background
-    static let deletionText = Color(hex: 0xCC6666)        // Tomorrow Night red
-    static let headerBackground = Color(hex: 0x282A2E)    // Line color
+    static let additionBackground = Color(hex: 0x2A3D2A) // Darker green background
+    static let additionText = Color(hex: 0xB5BD68) // Tomorrow Night green
+    static let deletionBackground = Color(hex: 0x3D2A2A) // Darker red background
+    static let deletionText = Color(hex: 0xCC6666) // Tomorrow Night red
+    static let headerBackground = Color(hex: 0x282A2E) // Line color
     static let hunkHeaderBackground = Color(hex: 0x373B41) // Selection color
-    static let headerText = Color(hex: 0x8ABEB7)          // Tomorrow Night aqua
-    static let lineNumberColor = Color(hex: 0x969896)     // Comment color
+    static let headerText = Color(hex: 0x8ABEB7) // Tomorrow Night aqua
+    static let lineNumberColor = Color(hex: 0x969896) // Comment color
 }
 
 extension Color {
@@ -233,13 +233,13 @@ struct FileRowView: View {
             GitDiffColors.additionText
 
         case .modified:
-            Color(hex: 0x81A2BE)  // Tomorrow Night blue
+            Color(hex: 0x81A2BE) // Tomorrow Night blue
 
         case .deleted:
             GitDiffColors.deletionText
 
         case .renamed:
-            Color(hex: 0xDE935F)  // Tomorrow Night orange
+            Color(hex: 0xDE935F) // Tomorrow Night orange
 
         case .untracked:
             GitDiffColors.comment

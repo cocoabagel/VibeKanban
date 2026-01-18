@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var showingNewItemSheet = false
     @State private var terminalManager = TerminalSessionManager()
     @State private var selectedFilter: TaskStatus?
+    @State private var searchText = ""
 
     var body: some View {
         HSplitView {
@@ -28,6 +29,7 @@ struct ContentView: View {
                 baseWorkingDirectory: $baseWorkingDirectory,
                 skipPermissions: $skipPermissions,
                 selectedFilter: $selectedFilter,
+                searchText: $searchText,
                 terminalManager: terminalManager,
                 onCreateItem: { showingNewItemSheet = true },
                 onDeleteItem: deleteItem,
@@ -221,8 +223,18 @@ struct ContentView: View {
     }
 
     private var filteredItems: [KanbanItem] {
-        guard let filter = selectedFilter else { return items }
-        return items.filter { $0.status == filter }
+        var result = items
+        if let filter = selectedFilter {
+            result = result.filter { $0.status == filter }
+        }
+        if !searchText.isEmpty {
+            let query = searchText.lowercased()
+            result = result.filter { item in
+                item.title.lowercased().contains(query) ||
+                    item.itemDescription.lowercased().contains(query)
+            }
+        }
+        return result
     }
 }
 

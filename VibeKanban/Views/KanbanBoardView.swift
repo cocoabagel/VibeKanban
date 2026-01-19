@@ -36,6 +36,7 @@ struct KanbanBoardView: View {
     let onDeleteItem: (KanbanItem) -> Void
     let onDeleteCompletedItems: () -> Void
     let onMoveItem: (KanbanItem, TaskStatus) -> Void
+    var onMultiTerminalMode: (() -> Void)?
 
     /// リポジトリに紐づくタスクのみをフィルタリング
     private var repositoryFilteredItems: [KanbanItem] {
@@ -77,7 +78,8 @@ struct KanbanBoardView: View {
                 baseWorkingDirectory: $baseWorkingDirectory,
                 skipPermissions: $skipPermissions,
                 onCreateItem: onCreateItem,
-                onDeleteCompletedItems: onDeleteCompletedItems
+                onDeleteCompletedItems: onDeleteCompletedItems,
+                onMultiTerminalMode: onMultiTerminalMode
             )
 
             Divider()
@@ -108,6 +110,7 @@ struct SessionSidebar: View {
     @Binding var skipPermissions: Bool
     let onCreateItem: () -> Void
     let onDeleteCompletedItems: () -> Void
+    var onMultiTerminalMode: (() -> Void)?
 
     @State private var showingDeleteConfirmation = false
 
@@ -143,6 +146,7 @@ struct SessionSidebar: View {
             statsSection
             settingsSection
             Spacer()
+            multiTerminalButton
             deleteCompletedButton
             newSessionButton
         }
@@ -246,6 +250,25 @@ struct SessionSidebar: View {
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundColor(SessionMonitorColors.gray)
         }
+    }
+
+    private var multiTerminalButton: some View {
+        Button {
+            onMultiTerminalMode?()
+        } label: {
+            HStack {
+                Image(systemName: "square.grid.2x2")
+                Text("Multi Terminal")
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(Color.white.opacity(0.1))
+            .foregroundColor(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .disabled(items.isEmpty || onMultiTerminalMode == nil)
+        .opacity(items.isEmpty || onMultiTerminalMode == nil ? 0.5 : 1.0)
     }
 
     private var newSessionButton: some View {

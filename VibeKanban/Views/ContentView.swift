@@ -20,40 +20,55 @@ struct ContentView: View {
     @State private var selectedFilter: TaskStatus?
     @State private var searchText = ""
     @State private var isTerminalFullScreen = false
+    @State private var isMultiTerminalMode = false
 
     var body: some View {
-        HSplitView {
-            // Left side: Kanban Board
-            if !isTerminalFullScreen {
-                KanbanBoardView(
-                    items: items,
-                    selectedItem: $selectedItem,
-                    baseWorkingDirectory: $baseWorkingDirectory,
-                    skipPermissions: $skipPermissions,
-                    selectedFilter: $selectedFilter,
-                    searchText: $searchText,
-                    terminalManager: terminalManager,
-                    onCreateItem: { showingNewItemSheet = true },
-                    onDeleteItem: deleteItem,
-                    onDeleteCompletedItems: deleteCompletedItems,
-                    onMoveItem: moveItem
-                )
-                .frame(minWidth: 500, idealWidth: 600)
-            }
-
-            // Right side: Terminal View (switches per kanban item)
-            if let item = selectedItem {
-                TerminalContainerView(
-                    item: item,
+        Group {
+            if isMultiTerminalMode {
+                // Multi Terminal Mode: Full screen grid of all terminals
+                MultiTerminalView(
+                    items: currentRepositoryItems,
                     terminalManager: terminalManager,
                     skipPermissions: skipPermissions,
-                    isFullScreen: $isTerminalFullScreen
+                    isMultiTerminalMode: $isMultiTerminalMode
                 )
-                .id(item.id)
-                .frame(minWidth: 500)
             } else {
-                EmptyTerminalView()
-                    .frame(minWidth: 500)
+                // Single Terminal Mode: HSplitView with Kanban + Terminal
+                HSplitView {
+                    // Left side: Kanban Board
+                    if !isTerminalFullScreen {
+                        KanbanBoardView(
+                            items: items,
+                            selectedItem: $selectedItem,
+                            baseWorkingDirectory: $baseWorkingDirectory,
+                            skipPermissions: $skipPermissions,
+                            selectedFilter: $selectedFilter,
+                            searchText: $searchText,
+                            terminalManager: terminalManager,
+                            onCreateItem: { showingNewItemSheet = true },
+                            onDeleteItem: deleteItem,
+                            onDeleteCompletedItems: deleteCompletedItems,
+                            onMoveItem: moveItem,
+                            onMultiTerminalMode: { isMultiTerminalMode = true }
+                        )
+                        .frame(minWidth: 500, idealWidth: 600)
+                    }
+
+                    // Right side: Terminal View (switches per kanban item)
+                    if let item = selectedItem {
+                        TerminalContainerView(
+                            item: item,
+                            terminalManager: terminalManager,
+                            skipPermissions: skipPermissions,
+                            isFullScreen: $isTerminalFullScreen
+                        )
+                        .id(item.id)
+                        .frame(minWidth: 500)
+                    } else {
+                        EmptyTerminalView()
+                            .frame(minWidth: 500)
+                    }
+                }
             }
         }
         .sheet(isPresented: $showingNewItemSheet) {
@@ -239,6 +254,12 @@ struct ContentView: View {
             }
         }
         return result
+    }
+
+    private var currentRepositoryItems: [KanbanItem] {
+        guard !baseWorkingDirectory.isEmpty else { return [] }
+        let worktreePrefix = "\(baseWorkingDirectory)-worktrees/"
+        return items.filter { $0.workingDirectory.hasPrefix(worktreePrefix) }
     }
 }
 

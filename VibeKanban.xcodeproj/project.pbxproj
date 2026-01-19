@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0DAA43CB2494AADF0E72992E /* VibeKanbanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95472D7B80997621B2087700 /* VibeKanbanApp.swift */; };
 		119F3687E451FC12F406C345 /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C27EA0A97A31D3D75BCF1FE /* KeyboardShortcuts.swift */; };
+		1A2B3C4D5E6F7A8B9C0D1E2F /* MultiTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* MultiTerminalView.swift */; };
 		340C167385CD31D3CFD53054 /* TerminalNSViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A5937F8147415CEF15EDA57 /* TerminalNSViewRepresentable.swift */; };
 		3D7016B272C9A9E44DF3D946 /* ClaudeHooksManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21CA28FB224C30EA252E560A /* ClaudeHooksManager.swift */; };
 		4BE8AFD5487F41B4A729962B /* TerminalSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062F1AB9BAFD9C3677FFE771 /* TerminalSessionManager.swift */; };
@@ -29,6 +30,7 @@
 /* Begin PBXFileReference section */
 		062215BAE93C1B758749BFC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		062F1AB9BAFD9C3677FFE771 /* TerminalSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionManager.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* MultiTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiTerminalView.swift; sourceTree = "<group>"; };
 		0CE1890FB8B385C7062A24AE /* VibeKanban.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VibeKanban.entitlements; sourceTree = "<group>"; };
 		0EC293982E4C8822E8191B3B /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		15684B9CCB2CF02EFFB805AF /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 				B5563F003FE5963426CED0CC /* ContentView.swift */,
 				D8E237C4FB4E024C66BAD0C6 /* GitDiffView.swift */,
 				3332EEB26BC2A19AC2985457 /* KanbanBoardView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* MultiTerminalView.swift */,
 				92DADDE021D56EEDAEC91F17 /* TerminalColors.swift */,
 				CD74272EA7933C34047CA7A5 /* TerminalContainerView.swift */,
 				5A5937F8147415CEF15EDA57 /* TerminalNSViewRepresentable.swift */,
@@ -214,6 +217,7 @@
 				A2A0C98886D44806B636EA0C /* KanbanBoardView.swift in Sources */,
 				FB2B2E1D541DF9D3FE80FA97 /* KanbanItem.swift in Sources */,
 				119F3687E451FC12F406C345 /* KeyboardShortcuts.swift in Sources */,
+				1A2B3C4D5E6F7A8B9C0D1E2F /* MultiTerminalView.swift in Sources */,
 				D23435067A24B0FF41117695 /* NotificationManager.swift in Sources */,
 				C24B316D81D037AF42A0D225 /* TerminalColors.swift in Sources */,
 				E39D09FB9F8384DF2DE1A01C /* TerminalContainerView.swift in Sources */,

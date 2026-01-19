@@ -2,7 +2,22 @@
 
 macOS向けのカンバンスタイルタスク管理アプリ。各タスクにターミナルセッションを関連付け、Claude Codeを実行できます。
 
-![VibeKanban Screenshot](screenshot.png)
+## スクリーンショット
+
+### タスク作成
+![New Task](images/1.png)
+
+### RUNNING - Claude Code実行中
+![Running](images/2.png)
+
+### WAITING - 入力待ち
+![Waiting](images/3.png)
+
+### COMPLETION - タスク完了
+![Completion](images/4.png)
+
+### Git Diff / Commit / Push
+![Git Diff](images/5.png)
 
 ## なぜVibeKanban？
 

@@ -44,9 +44,8 @@ RUNNING/WAITING/COMPLETIONが一目でわかり、通知機能でバックグラ
 
 ## 必要要件
 
-- macOS 14.0+
-- Xcode 15.0+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+- macOS 14.0以降
+- Xcode 15.0以降
 - [Claude Code](https://claude.ai/download) (CLI)
 
 ## インストール

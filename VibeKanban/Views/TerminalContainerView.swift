@@ -6,6 +6,7 @@ struct TerminalContainerView: View {
     @Bindable var item: KanbanItem
     let terminalManager: TerminalSessionManager
     let skipPermissions: Bool
+    @Binding var isFullScreen: Bool
 
     @State private var session: TerminalSession?
     @State private var currentItemId: UUID?
@@ -35,6 +36,15 @@ struct TerminalContainerView: View {
             }
 
             Spacer()
+
+            Button {
+                isFullScreen.toggle()
+            } label: {
+                Image(systemName: isFullScreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 14))
+            }
+            .buttonStyle(.borderless)
+            .help(isFullScreen ? "通常表示に戻す" : "フルスクリーン表示")
 
             Button {
                 WindowManager.shared.openGitDiffWindow(for: item)

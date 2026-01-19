@@ -19,31 +19,35 @@ struct ContentView: View {
     @State private var terminalManager = TerminalSessionManager()
     @State private var selectedFilter: TaskStatus?
     @State private var searchText = ""
+    @State private var isTerminalFullScreen = false
 
     var body: some View {
         HSplitView {
             // Left side: Kanban Board
-            KanbanBoardView(
-                items: items,
-                selectedItem: $selectedItem,
-                baseWorkingDirectory: $baseWorkingDirectory,
-                skipPermissions: $skipPermissions,
-                selectedFilter: $selectedFilter,
-                searchText: $searchText,
-                terminalManager: terminalManager,
-                onCreateItem: { showingNewItemSheet = true },
-                onDeleteItem: deleteItem,
-                onDeleteCompletedItems: deleteCompletedItems,
-                onMoveItem: moveItem
-            )
-            .frame(minWidth: 500, idealWidth: 600)
+            if !isTerminalFullScreen {
+                KanbanBoardView(
+                    items: items,
+                    selectedItem: $selectedItem,
+                    baseWorkingDirectory: $baseWorkingDirectory,
+                    skipPermissions: $skipPermissions,
+                    selectedFilter: $selectedFilter,
+                    searchText: $searchText,
+                    terminalManager: terminalManager,
+                    onCreateItem: { showingNewItemSheet = true },
+                    onDeleteItem: deleteItem,
+                    onDeleteCompletedItems: deleteCompletedItems,
+                    onMoveItem: moveItem
+                )
+                .frame(minWidth: 500, idealWidth: 600)
+            }
 
             // Right side: Terminal View (switches per kanban item)
             if let item = selectedItem {
                 TerminalContainerView(
                     item: item,
                     terminalManager: terminalManager,
-                    skipPermissions: skipPermissions
+                    skipPermissions: skipPermissions,
+                    isFullScreen: $isTerminalFullScreen
                 )
                 .id(item.id)
                 .frame(minWidth: 500)

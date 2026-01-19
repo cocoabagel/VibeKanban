@@ -33,6 +33,7 @@ RUNNING/WAITING/COMPLETIONが一目でわかり、通知機能でバックグラ
 - **Claude Code連携**: タスク作成時に自動でClaude Codeを起動
 - **Git Worktree対応**: タスクごとにGit worktreeを自動作成
 - **Git Diff表示**: Tower風のリッチなdiff表示（行番号、色分け、コピー可能）
+- **Git Commit/Push**: Diff画面から直接コミット・プッシュ可能
 - **ステータス自動検出**: Claude Codeの状態をhooksで自動検出
 - **通知機能**: WAITING/COMPLETION時にmacOS通知を送信
 - **作業時間計測**: タスクごとの作業時間を自動計測
@@ -45,7 +46,7 @@ RUNNING/WAITING/COMPLETIONが一目でわかり、通知機能でバックグラ
 ## 必要要件
 
 - macOS 14.0以降
-- Xcode 15.0以降
+- Xcode 26.0以降
 - [Claude Code](https://claude.ai/download) (CLI)
 
 ## インストール
@@ -57,19 +58,13 @@ git clone https://github.com/your-username/VibeKanban.git
 cd VibeKanban
 ```
 
-### 2. Xcodeプロジェクトを生成
-
-```bash
-xcodegen generate
-```
-
-### 3. ビルド
+### 2. ビルド
 
 ```bash
 xcodebuild -scheme VibeKanban -configuration Release build
 ```
 
-または Xcode でプロジェクトを開いてビルド。
+または Xcode で `VibeKanban.xcodeproj` を開いてビルド。
 
 ## 使い方
 
@@ -98,6 +93,13 @@ xcodebuild -scheme VibeKanban -configuration Release build
 - ファイル一覧から変更ファイルを選択
 - 行番号付きのdiff表示
 - テキスト選択・コピー可能
+
+### Git Commit/Push
+
+Git Diffウィンドウのツールバーから直接コミット・プッシュできます。
+
+- コミットメッセージを入力してCommitボタンをクリック
+- Pushボタンでリモートにプッシュ（upstreamが未設定の場合は自動設定）
 
 ### Skip Permissions
 
@@ -131,7 +133,6 @@ xcodebuild -scheme VibeKanban -configuration Release build
 - **UI**: SwiftUI
 - **データ永続化**: SwiftData
 - **ターミナル**: [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm)
-- **プロジェクト管理**: XcodeGen
 
 ## アーキテクチャ
 

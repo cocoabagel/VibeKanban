@@ -72,7 +72,10 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showingNewItemSheet) {
-            NewItemSheet(baseDirectory: baseWorkingDirectory) { title, description, worktreePath in
+            NewItemSheet(
+                baseDirectory: baseWorkingDirectory,
+                existingTasks: currentRepositoryItems
+            ) { title, description, worktreePath in
                 createItem(title: title, description: description, workingDirectory: worktreePath)
             }
         }
@@ -286,14 +289,20 @@ struct NewItemSheet: View {
     private var dismiss
 
     let baseDirectory: String
+    let existingTasks: [KanbanItem]
 
     @State private var title = ""
     @State private var description = ""
     @State private var worktreeName = ""
+    @State private var selectedParentTask: KanbanItem?
     @State private var isCreatingWorktree = false
     @State private var errorMessage: String?
 
     let onCreate: (String, String, String) -> Void
+
+    private var parentTaskOptions: [KanbanItem] {
+        existingTasks.sorted { $0.updatedAt > $1.updatedAt }
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -332,6 +341,24 @@ struct NewItemSheet: View {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(Color(NSColor.separatorColor), lineWidth: 1)
                 )
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Parent Task (Optional)")
+                    .font(.headline)
+                Picker("", selection: $selectedParentTask) {
+                    Text("None (create from main branch)").tag(nil as KanbanItem?)
+                    ForEach(parentTaskOptions) { task in
+                        Text(task.title).tag(task as KanbanItem?)
+                    }
+                }
+                .labelsHidden()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if let parent = selectedParentTask {
+                    Text("Branch from: \(getBranchName(from: parent.workingDirectory))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -374,6 +401,10 @@ struct NewItemSheet: View {
         }
     }
 
+    private func getBranchName(from worktreePath: String) -> String {
+        URL(fileURLWithPath: worktreePath).lastPathComponent
+    }
+
     private var worktreePath: String {
         let baseURL = URL(fileURLWithPath: baseDirectory)
         let parentDir = baseURL.deletingLastPathComponent().path
@@ -394,7 +425,8 @@ struct NewItemSheet: View {
         Task {
             do {
                 let worktreeDir = worktreePath
-                try await createGitWorktree(at: baseDirectory, name: worktreeName, path: worktreeDir)
+                let baseBranch = selectedParentTask.map { getBranchName(from: $0.workingDirectory) }
+                try await createGitWorktree(at: baseDirectory, name: worktreeName, path: worktreeDir, baseBranch: baseBranch)
 
                 // Setup Claude Code hooks for the worktree
                 ClaudeHooksManager.setupHooksForProject(at: worktreeDir)
@@ -412,37 +444,41 @@ struct NewItemSheet: View {
         }
     }
 
-    private func createGitWorktree(at repoPath: String, name: String, path: String) async throws {
+    private func createGitWorktree(at repoPath: String, name: String, path: String, baseBranch: String? = nil) async throws {
         // Create parent directory if needed
         let pathURL = URL(fileURLWithPath: path)
         let parentDir = pathURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: parentDir, withIntermediateDirectories: true)
 
-        // Run git worktree add asynchronously
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        // Run git worktree add synchronously to avoid pipe issues
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+
+        // If baseBranch is provided, create from that branch
+        // git worktree add -b <new-branch> <path> <base-branch>
+        if let baseBranch {
+            process.arguments = ["worktree", "add", "-b", name, path, baseBranch]
+        } else {
             process.arguments = ["worktree", "add", "-b", name, path]
-            process.currentDirectoryURL = URL(fileURLWithPath: repoPath)
+        }
+        process.currentDirectoryURL = URL(fileURLWithPath: repoPath)
 
-            let pipe = Pipe()
-            process.standardError = pipe
+        // Capture stderr but don't block on progress output
+        let errorPipe = Pipe()
+        process.standardError = errorPipe
+        process.standardOutput = FileHandle.nullDevice
 
-            process.terminationHandler = { process in
-                if process.terminationStatus != 0 {
-                    let errorData = pipe.fileHandleForReading.readDataToEndOfFile()
-                    let errorString = String(data: errorData, encoding: .utf8) ?? "Unknown error"
-                    continuation.resume(throwing: WorktreeError.gitError(errorString))
-                } else {
-                    continuation.resume()
-                }
-            }
+        try process.run()
+        process.waitUntilExit()
 
-            do {
-                try process.run()
-            } catch {
-                continuation.resume(throwing: error)
-            }
+        // Check if worktree was created successfully by verifying directory exists
+        let worktreeExists = FileManager.default.fileExists(atPath: path)
+
+        if !worktreeExists {
+            // Only read error if worktree wasn't created
+            let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let errorString = String(data: errorData, encoding: .utf8) ?? "Failed to create worktree"
+            throw WorktreeError.gitError(errorString)
         }
     }
 }
